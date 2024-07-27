@@ -70,7 +70,7 @@ def main():
             if st.button("Vorhersagen"):
                 with st.spinner("Vorhersage wird durchgeführt..."):
                     try:
-                        YOLO_PATH = 'F:/KI in den Life Sciences/hautkrebserkennung/runs/classify/train3/weights/best_for_2_classes.pt'  # Path to the saved YOLO model
+                        YOLO_PATH = 'F:/GitHub Hautkrebserkennung/hautkrebserkennung/runs/classify/train3/weights/best_for_2_classes.pt'  # Path to the saved YOLO model
                         prediction = prediction_yolo(YOLO_PATH, image_path)
                         labels = ["Bösartig", "Gutartig"]  # Correct order based on your model
 
