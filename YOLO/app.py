@@ -6,8 +6,8 @@ from torchvision import transforms
 from ultralytics import YOLO
 import numpy as np
 
-# Funktion zur Durchführung von Vorhersagen mit dem YOLO-Modell
-def predicition_yolo(yolo_path: str, image_path: str):
+# Function for prediction using YOLO model
+def prediction_yolo(yolo_path: str, image_path: str):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model_yolo = YOLO(yolo_path)
 
@@ -21,26 +21,30 @@ def predicition_yolo(yolo_path: str, image_path: str):
 
     with torch.no_grad():
         outputs = model_yolo(image_tensor)
-        # Verwendung von top1 für die Vorhersage
+        # Use top1 for prediction
         predicted_class = outputs[0].probs.top1
 
     return predicted_class
 
-# Hauptfunktion der Streamlit-App
+# Main function of the Streamlit app
 def main():
     st.set_page_config(page_title="Hautläsion Klassifikation", page_icon="🩺", layout="wide")
     
-    st.title('🔍 Hautläsion Klassifikation')
-    st.write("Willkommen zu unserer **Hautläsion Klassifikations-App**! Nutzen Sie diese App, um zu überprüfen, ob eine Hautläsion bösartig oder gutartig ist.")
+    st.markdown("<h1 style='text-align: center;'>🔍 Hautläsion Klassifikation</h1>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align: center;'>
+        Willkommen zu unserer <strong>Hautläsion Klassifikations-App</strong>! Nutzen Sie diese App, um zu überprüfen, ob eine Hautläsion bösartig oder gutartig ist.
+    </div>
+    """, unsafe_allow_html=True)
     
     st.sidebar.header("Über diese App")
     st.sidebar.write("""
     Diese App verwendet ein vortrainiertes YOLO-Modell zur Klassifikation von Hautläsionen.
-    Laden Sie einfach ein Bild hoch oder wählen Sie ein bereits vorhandenes Bild aus, um eine Vorhersage zu erhalten.
+    Wählen Sie einfach ein Bild aus den vorhandenen Bildern aus, um eine Vorhersage zu erhalten.
     """)
     
-    # Verzeichnis mit den vorhandenen Bildern
-    image_dir = r'F:\KI in den Life Sciences\hautkrebserkennung\YOLO\images\test'
+    # Directory with existing images
+    image_dir = 'F:/KI in den Life Sciences/hautkrebserkennung/YOLO/images/test'
     categories = ['boesartig', 'gutartig']
 
     image_files = []
@@ -50,35 +54,32 @@ def main():
             files = [os.path.join(category, f) for f in os.listdir(category_path) if os.path.isfile(os.path.join(category_path, f))]
             image_files.extend(files)
 
-    # Layout mit zwei Spalten
+    # Two column layout
     col1, col2 = st.columns(2)
 
     with col1:
-        selected_image = st.selectbox("Wählen Sie ein Bild aus den hochgeladenen Bildern aus:", image_files)
+        selected_image = st.selectbox("Wählen Sie ein Bild aus den vorhandenen Bildern aus:", image_files)
         if selected_image:
             image_path = os.path.join(image_dir, selected_image)
             image = Image.open(image_path)
-            st.image(image, caption='Ausgewähltes Bild.', use_column_width=True)
+            st.image(image, caption='Ausgewähltes Bild', use_column_width=True)
 
     with col2:
-        uploaded_file = st.file_uploader("Oder laden Sie ein neues Bild hoch:", type=["jpg", "jpeg", "png"])
-        if uploaded_file is not None:
-            image = Image.open(uploaded_file)
-            st.image(image, caption='Hochgeladenes Bild.', use_column_width=True)
-            image_path = os.path.join(image_dir, uploaded_file.name)
-            with open(image_path, 'wb') as f:
-                f.write(uploaded_file.getbuffer())
-    
-    if selected_image or uploaded_file:
-        if st.button("Vorhersagen"):
-            with st.spinner("Vorhersage wird durchgeführt..."):
-                try:
-                    YOLO_PATH = r'F:\KI in den Life Sciences\hautkrebserkennung\runs\classify\train3\weights\best_for_2_classes.pt'  # Pfad zum gespeicherten YOLO-Modell
-                    prediction = predicition_yolo(YOLO_PATH, image_path)
-                    labels = ["Gutartig", "Bösartig"]
-                    st.success(f"**Vorhersage:** {labels[prediction]}")
-                except Exception as e:
-                    st.error(f"Fehler bei der Vorhersage: {e}")
+        if selected_image:
+            st.markdown("<h3 style='text-align: center;'>Vorhersage</h3>", unsafe_allow_html=True)
+            if st.button("Vorhersagen"):
+                with st.spinner("Vorhersage wird durchgeführt..."):
+                    try:
+                        YOLO_PATH = 'F:/KI in den Life Sciences/hautkrebserkennung/runs/classify/train3/weights/best_for_2_classes.pt'  # Path to the saved YOLO model
+                        prediction = prediction_yolo(YOLO_PATH, image_path)
+                        labels = ["Gutartig", "Bösartig"]
+                        label = labels[prediction]
+                        if label == "Bösartig":
+                            st.error(f"**Vorhersage:** {label}")
+                        else:
+                            st.success(f"**Vorhersage:** {label}")
+                    except Exception as e:
+                        st.error(f"Fehler bei der Vorhersage: {e}")
 
 if __name__ == '__main__':
     main()
