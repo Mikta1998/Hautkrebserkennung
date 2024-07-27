@@ -44,7 +44,7 @@ def main():
     """)
     
     # Directory with existing images
-    image_dir = 'F:/KI in den Life Sciences/hautkrebserkennung/YOLO/images/test'
+    image_dir = 'F:/GitHub Hautkrebserkennung/hautkrebserkennung/YOLO/images/test'
     categories = ['boesartig', 'gutartig']
 
     image_files = []
