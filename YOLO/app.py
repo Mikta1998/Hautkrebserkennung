@@ -72,7 +72,7 @@ def main():
                     try:
                         YOLO_PATH = 'runs/classify/train3/weights/best_for_2_classes.pt'  # Path to the saved YOLO model
                         prediction = prediction_yolo(YOLO_PATH, image_path)
-                        labels = ["Bösartig", "Gutartig"]  # Correct order based on your model
+                        labels = ["Bösartig", "Gutartig"]  
 
                         # Debugging output
                         st.write(f"Predicted class index: {prediction}")
