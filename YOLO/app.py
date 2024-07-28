@@ -7,7 +7,7 @@ from ultralytics import YOLO
 import numpy as np
 
 # Function for prediction using YOLO model
-def prediction_yolo(yolo_path: str, image_path: str):
+def prediction_yolo(yolo_path: str, image: Image.Image):
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model_yolo = YOLO(yolo_path)
 
@@ -16,7 +16,6 @@ def prediction_yolo(yolo_path: str, image_path: str):
         transforms.ToTensor(),
     ])
 
-    image = Image.open(image_path).convert('RGB')
     image_tensor = transform_test(image).unsqueeze(0).to(device)
 
     with torch.no_grad():
@@ -40,7 +39,7 @@ def main():
     st.sidebar.header("Über diese App")
     st.sidebar.write("""
     Diese App verwendet ein vortrainiertes YOLO-Modell zur Klassifikation von Hautläsionen.
-    Wählen Sie einfach ein Bild aus den vorhandenen Bildern aus, um eine Vorhersage zu erhalten.
+    Wählen Sie einfach ein Bild aus den vorhandenen Bildern aus oder laden Sie Ihr eigenes Bild hoch, um eine Vorhersage zu erhalten.
     """)
     
     # Directory with existing images
@@ -59,22 +58,27 @@ def main():
 
     with col1:
         selected_image = st.selectbox("Wählen Sie ein Bild aus den vorhandenen Bildern aus:", image_files)
-        if selected_image:
+        uploaded_image = st.file_uploader("Oder laden Sie ein Bild hoch:", type=["jpg", "jpeg", "png"])
+
+        if uploaded_image:
+            image = Image.open(uploaded_image).convert('RGB')
+            st.image(image, caption='Hochgeladenes Bild', use_column_width=True)
+        elif selected_image:
             image_path = os.path.join(image_dir, selected_image)
             image = Image.open(image_path)
             st.image(image, caption='Ausgewähltes Bild', use_column_width=True)
 
     with col2:
-        if selected_image:
+        if uploaded_image or selected_image:
             st.markdown("<h3 style='text-align: center;'>Vorhersage</h3>", unsafe_allow_html=True)
             if st.button("Vorhersagen"):
                 with st.spinner("Vorhersage wird durchgeführt..."):
                     try:
-                        YOLO_PATH = 'runs/classify/train3/weights/best_for_2_classes.pt'  # Path to the saved YOLO model
-                        prediction = prediction_yolo(YOLO_PATH, image_path)
+                        YOLO_PATH = 'runs/classify/train3/weights/best_for_2_classes.pt'  
+                        prediction = prediction_yolo(YOLO_PATH, image)
                         labels = ["Bösartig", "Gutartig"]  
 
-                        # Debugging output
+                        
                         st.write(f"Predicted class index: {prediction}")
                         st.write(f"Predicted label: {labels[prediction]}")
 
